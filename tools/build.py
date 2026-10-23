@@ -2,7 +2,6 @@
 import argparse
 import json
 from pathlib import Path
-import re
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,10 +10,7 @@ parser.add_argument("--tag", help="Release tag, e.g. 1.0 or v1.0.0; defaults to 
 args = parser.parse_args()
 manifest = json.loads((ROOT / "module.json").read_text(encoding="utf-8"))
 tag = args.tag or f"v{manifest['version']}"
-match = re.fullmatch(r"(\d+\.\d+)(\.\d+)?(-[0-9A-Za-z.-]+)?", tag.removeprefix("v"))
-if not match:
-    parser.error("Tag must be MAJOR.MINOR or MAJOR.MINOR.PATCH (optional v prefix and prerelease suffix).")
-version = match[1] + (match[2] or ".0") + (match[3] or "")
+version = tag.removeprefix("v")
 manifest["version"] = version
 manifest["download"] = f"{manifest['url']}/releases/download/{tag}/module.zip"
 

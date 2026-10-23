@@ -20,7 +20,7 @@
 
 3. Fill out the release version as the tag name.
 
-Tags may use `1.0`, `v1.0`, `1.0.0`, or `v1.0.0`, with an optional prerelease suffix such as `-rc.1`. A two-component tag becomes a three-component manifest version (`1.0` becomes `1.0.0`); the ZIP download URL always keeps the exact release tag.
+The build uses the release tag as the manifest version, removing a leading `v` if present. For example, `1.0` and `v1.0` both produce version `1.0`. The ZIP download URL always keeps the exact release tag; the build does not require SemVer.
 
 If you want to add details at this stage you can, or you can always come back later and edit them.
 
@@ -43,6 +43,10 @@ This `module.json` will only ever point at this release's `module.zip`, making i
 7. You can use the url `https://github.com/<user>/<repo>/releases/latest/download/module.json` to refer to the manifest.
 
 This is the url you want to use to install the module typically, as it will get updated automatically.
+
+## Rebuild an existing release from a newer commit
+
+Re-running a failed GitHub Actions job uses its original commit. To rebuild an existing release with a fix from a newer commit, first commit and push the updated workflow yourself. Then open **Actions → Validate and build module → Run workflow**, select the updated branch, enter the existing tag (for example `1.0`) in **release_tag**, and run it. The workflow builds the selected branch and uploads `module.json` and `module.zip` to that release. Leaving **release_tag** empty produces build artifacts without uploading to a release. No tag is moved or created.
 
 # How to List Your Releases on Package Admin
 
