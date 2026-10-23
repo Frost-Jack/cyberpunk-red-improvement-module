@@ -20,7 +20,7 @@
 
 3. Fill out the release version as the tag name.
 
-The build uses the release tag as the manifest version, removing a leading `v` if present. For example, `1.0` and `v1.0` both produce version `1.0`. The ZIP download URL always keeps the exact release tag; the build does not require SemVer.
+The workflow extracts the version from the release tag and removes a leading `v`. The ZIP download URL keeps the exact release tag. As in the original template, `replace-tokens` substitutes the manifest values, `zip` creates the archive, and `release-action` attaches both files to the release. There is no Python build step or custom version-format check.
 
 If you want to add details at this stage you can, or you can always come back later and edit them.
 
@@ -40,13 +40,13 @@ A Github Action will run to populate the `module.json` and `module.zip` with the
 
 This `module.json` will only ever point at this release's `module.zip`, making it useful for sharing a specific version for compatibility purposes.
 
-7. You can use the url `https://github.com/<user>/<repo>/releases/latest/download/module.json` to refer to the manifest.
+7. You can use the url `https://github.com/Frost-Jack/cyberpunk-red-improvement-module/releases/latest/download/module.json` to refer to the manifest.
 
 This is the url you want to use to install the module typically, as it will get updated automatically.
 
-## Rebuild an existing release from a newer commit
+## Release source
 
-Re-running a failed GitHub Actions job uses its original commit. To rebuild an existing release with a fix from a newer commit, first commit and push the updated workflow yourself. Then open **Actions → Validate and build module → Run workflow**, select the updated branch, enter the existing tag (for example `1.0`) in **release_tag**, and run it. The workflow builds the selected branch and uploads `module.json` and `module.zip` to that release. Leaving **release_tag** empty produces build artifacts without uploading to a release. No tag is moved or created.
+The workflow is named **Create Module Files For GitHub Release**, as in the original template. It runs when a release is published and builds that release's tagged commit. Commit and push the workflow changes yourself before creating the release tag. Re-running an older failed job continues to use its original commit and workflow.
 
 # How to List Your Releases on Package Admin
 

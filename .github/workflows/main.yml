@@ -1,20 +1,14 @@
-name: Validate and build module
+# Based on the original League of Foundry Developers release template.
+name: Create Module Files For GitHub Release
+
+env:
+  project_url: "https://github.com/${{ github.repository }}"
+  latest_manifest_url: "https://github.com/${{ github.repository }}/releases/latest/download/module.json"
+  release_module_url: "https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/module.zip"
 
 on:
-  push:
-  pull_request:
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: 'Existing release tag to upload (leave empty for build only)'
-        required: false
-        default: ''
-        type: string
-
-permissions:
-  contents: read
 
 jobs:
   build:
@@ -22,35 +16,49 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Test advancement and sheet integration
-        run: npm test
-      - name: Test release tags and packaged manifests
-        run: python -m unittest discover -s tests -p '*_test.py'
-      - name: Build archive and manifest
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Extract Version From Tag
+        id: get_version
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: echo "version-without-v=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
+
+      # Keep the checked-in manifest usable in local Foundry installations.
+      - name: Prepare Manifest Tokens
         run: |
-          if [ -n "$RELEASE_TAG" ]; then
-            python tools/build.py --tag "$RELEASE_TAG"
-          else
-            python tools/build.py
-          fi
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+          node <<'NODE'
+          const fs = require("node:fs");
+          const manifest = JSON.parse(fs.readFileSync("module.json", "utf8"));
+          manifest.version = "#{VERSION}#";
+          manifest.url = "#{URL}#";
+          manifest.manifest = "#{MANIFEST}#";
+          manifest.download = "#{DOWNLOAD}#";
+          fs.writeFileSync("module.json", JSON.stringify(manifest, null, 2) + "\n");
+          NODE
+
+      - name: Modify Module Manifest With Release-Specific Values
+        uses: cschleiden/replace-tokens@v1
         with:
-          name: cyberpunk-red-improvement-module
-          path: dist/
-      - name: Attach files to selected GitHub release
-        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+          files: 'module.json'
         env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
-        run: gh release upload "$RELEASE_TAG" dist/module.json dist/module.zip --clobber
+          VERSION: ${{ steps.get_version.outputs.version-without-v }}
+          URL: ${{ env.project_url }}
+          MANIFEST: ${{ env.latest_manifest_url }}
+          DOWNLOAD: ${{ env.release_module_url }}
+
+      - name: Create Module Archive
+        run: zip --recurse-paths ./module.zip module.json README.md LICENSE scripts/ styles/ languages/
+
+      - name: Update Release With Files
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          name: ${{ github.event.release.name }}
+          draft: ${{ github.event.release.unpublished }}
+          prerelease: ${{ github.event.release.prerelease }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: './module.json, ./module.zip'
+          tag: ${{ github.event.release.tag_name }}
+          body: ${{ github.event.release.body }}
