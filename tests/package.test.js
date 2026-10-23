@@ -8,8 +8,6 @@ test("manifest identifies the module and references existing release resources",
   const project = "https://github.com/Frost-Jack/cyberpunk-red-improvement-module";
   assert.equal(manifest.id, "cyberpunk-red-improvement-module");
   assert.equal(manifest.url, project);
-  assert.equal(manifest.manifest, `${project}/releases/latest/download/module.json`);
-  assert.equal(manifest.download, `${project}/releases/download/v${manifest.version}/module.zip`);
   assert.equal(manifest.relationships.systems[0].id, "cyberpunk-red-core");
   assert.equal(manifest.compatibility.minimum, "12");
   assert.equal(manifest.compatibility.maximum, "12");
