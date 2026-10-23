@@ -25,6 +25,8 @@ jobs:
           python-version: '3.12'
       - name: Test advancement and sheet integration
         run: npm test
+      - name: Test release tags and packaged manifests
+        run: python -m unittest discover -s tests -p '*_test.py'
       - name: Build archive and manifest
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}

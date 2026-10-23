@@ -20,6 +20,8 @@
 
 3. Fill out the release version as the tag name.
 
+Tags may use `1.0`, `v1.0`, `1.0.0`, or `v1.0.0`, with an optional prerelease suffix such as `-rc.1`. A two-component tag becomes a three-component manifest version (`1.0` becomes `1.0.0`); the ZIP download URL always keeps the exact release tag.
+
 If you want to add details at this stage you can, or you can always come back later and edit them.
 
 ![Release Creation Form](https://user-images.githubusercontent.com/7644614/93409543-225b1000-f865-11ea-9a19-f1906a724421.png)

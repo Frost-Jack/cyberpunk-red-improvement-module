@@ -7,13 +7,14 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--tag", help="Release tag, e.g. v1.0.0; defaults to the manifest version")
+parser.add_argument("--tag", help="Release tag, e.g. 1.0 or v1.0.0; defaults to the manifest version")
 args = parser.parse_args()
 manifest = json.loads((ROOT / "module.json").read_text(encoding="utf-8"))
 tag = args.tag or f"v{manifest['version']}"
-version = tag.removeprefix("v")
-if not re.fullmatch(r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?", version):
-    parser.error("Tag must be vMAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH (optional prerelease suffix).")
+match = re.fullmatch(r"(\d+\.\d+)(\.\d+)?(-[0-9A-Za-z.-]+)?", tag.removeprefix("v"))
+if not match:
+    parser.error("Tag must be MAJOR.MINOR or MAJOR.MINOR.PATCH (optional v prefix and prerelease suffix).")
+version = match[1] + (match[2] or ".0") + (match[3] or "")
 manifest["version"] = version
 manifest["download"] = f"{manifest['url']}/releases/download/{tag}/module.zip"
 
