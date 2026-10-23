@@ -1,0 +1,9 @@
+{
+  "name": "cyberpunk-red-improvement-module",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "build": "python tools/build.py"
+  }
+}
