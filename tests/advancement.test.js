@@ -345,3 +345,27 @@ test("sheet arrow follows IP, ownership and actor type; repeated renders do not 
   render();
   assert.equal(buttons.length, 0);
 });
+
+test("sheet search reset also binds to read-only characters with zero IP", async () => {
+  const input = { value: "Contortionist", addEventListener() {} };
+  let reset;
+  const anchor = { addEventListener(type, callback) { reset = callback; } };
+  const icon = { closest: () => anchor };
+  const root = {
+    querySelectorAll: () => [],
+    querySelector: selector => ({
+      ".filter-contents": input, ".reset-content-filter": icon
+    })[selector] ?? null
+  };
+  const character = actor("read-only", undefined, 0);
+  character.isOwner = false;
+  const sheet = {
+    actor: character, options: { editable: false, cprContentFilter: "Contortionist" },
+    async _render() { this.renderedFilter = this.options.cprContentFilter; }
+  };
+  hooks.get("renderActorSheet")(sheet, [root]);
+  await reset({ preventDefault() {}, stopImmediatePropagation() {} });
+  assert.equal(input.value, "");
+  assert.equal(sheet.options.cprContentFilter, "");
+  assert.equal(sheet.renderedFilter, "");
+});

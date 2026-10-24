@@ -1,5 +1,5 @@
 import { openAdvancement } from "./advancement.js";
-import { installBilingualSearch } from "./search.js";
+import { activateSheetSearch, installBilingualSearch } from "./search.js";
 
 const MODULE_ID = "cyberpunk-red-improvement-module";
 
@@ -19,6 +19,7 @@ Hooks.on("renderActorSheet", (sheet, html) => {
   root.querySelectorAll(".cpr-ip-open").forEach(button => button.remove());
 
   const actor = sheet.actor;
+  if (actor?.type === "character") activateSheetSearch(sheet, root);
   if (actor?.type !== "character" || !actor.isOwner
     || !(Number(actor.system.improvementPoints?.value) > 0)) return;
 
